@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My To-Do App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #eaeef3;
+    }
+    .app {
+      max-width: 420px;
+      margin: auto;
+      background: white;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background: #4f46e5;
+      color: white;
+      border: none;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+    li {
+      background: #f4f6fa;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    .done {
+      text-decoration: line-through;
+      color: gray;
+    }
+    .priority-High { border-left: 6px solid #ef4444; }
+    .priority-Medium { border-left: 6px solid #f59e0b; }
+    .priority-Low { border-left: 6px solid #10b981; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <h1>To-Do List</h1>
+
+  <input id="taskInput" placeholder="New task">
+  <input id="dateInput" type="date">
+  <select id="priorityInput">
+    <option>Low</option>
+    <option>Medium</option>
+    <option>High</option>
+  </select>
+
+  <button onclick="addTask()">Add Task</button>
+
+  <ul id="taskList"></ul>
+
+  <button onclick="clearCompleted()">Clear Completed</button>
+</div>
+
+<script>
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  const taskList = document.getElementById("taskList");
+
+  function saveTasks() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }
+
+  function renderTasks() {
+    taskList.innerHTML = "";
+    tasks.forEach((task, i) => {
+      const li = document.createElement("li");
+      li.className = `priority-${task.priority}`;
+      if (task.done) li.classList.add("done");
+
+      li.innerHTML = `
+        <input type="checkbox" ${task.done ? "checked" : ""} 
+          onclick="toggleTask(${i})">
+        ${task.text}<br>
+        📅 ${task.date || "No date"} | ⭐ ${task.priority}
+        <br><br>
+        <button onclick="deleteTask(${i})">Delete</button>
+      `;
+      taskList.appendChild(li);
+    });
+  }
+
+  function addTask() {
+    const text = taskInput.value.trim();
+    if (!text) return;
+
+    tasks.push({
+      text,
+      date: dateInput.value,
+      priority: priorityInput.value,
+      done: false
+    });
+
+    taskInput.value = "";
+    saveTasks();
+    renderTasks();
+  }
+
+  function toggleTask(i) {
+    tasks[i].done = !tasks[i].done;
+    saveTasks();
+    renderTasks();
+  }
+
+  function deleteTask(i) {
+    tasks.splice(i, 1);
+    saveTasks();
+    renderTasks();
+  }
+
+  function clearCompleted() {
+    tasks = tasks.filter(t => !t.done);
+    saveTasks();
+    renderTasks();
+  }
+
+  renderTasks();
+</script>
+
+</body>
+</html>
